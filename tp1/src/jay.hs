@@ -18,30 +18,10 @@ var varName s = maybe 0 id (lookup varName s)
 	que devuelva eso porque segun el tipo de asig esta tiene que devolver un estado => no se puede usar bifurcacion porq no dan los tipos
 --}
 asig :: String -> JayExpression Int -> JaySentence
---asig nombre valor estado = [(nombre, valor estado)] ++ estado 
---asig nombre valor estado = bifurcacion varPredicate (\t -> [(fst t, fst.snd t snd.snd t)] ++ snd.snd t) (nombre,(valor,estado)) (\t -> concatMap () )
 asig nombre valor estado = 	if (var nombre estado == 0) then
 								[(nombre, valor estado)] ++ estado 
 							else
-								{-- FIXME
-									- La linea correcta para el else es "1", pero no anda ( la "2" es un ejemplo simplificado )
-									  Lo que quiero hacer es recorrer la lista, para el elemento que coincida, le cambio la segunda
-									  coordenada a la tupla por el value que le paso, que representa el nuevo que se le esta asignando.
-									  No entiendo por q no anda la puta madre....
-									NOTE : como esta ahora, el comportamiento es:
-										- si no esta la variable en el estado, lo agrego
-										- si esta, no le cambio el valor, se queda con el que estaba
-								--1 concatMap (\key value elem -> if (key == fst elem) then (key, value) else elem) estado
-								--2 concatMap (\x -> x) estado
-								--}
-								estado		-- puse esto para que compile
-
-
-
-{--
-pruebaBif :: String -> JaySentence -> JayExpression Int 
-pruebaBif nombre valor estado = ( bifurcacion (\tup -> var (fst tup) (snd tup) == 0) (nombre,estado) ) 5 6 
---}
+								map ((\key value state elem -> if (key == fst elem) then (key, value state) else elem ) nombre valor estado) estado
 
 
 {--
@@ -52,15 +32,6 @@ varPredicate tup = var (fst tup) (snd.snd tup) == 0
 {--
 isIn :: Predicate (String, JaySentence)
 isIn tup = (\tup -> var (fst tup) (snd tup) == 0) 
---}
-
-test :: String -> JayExpression Int 
-test s j = (\tup -> var (fst tup) (snd tup) ) (s,j)
-
-
-{--
-pruebaBif :: String -> JayExpression Int -> JaySentence -> Int
-pruebaBif nombre valor estado = bifurcacion ((\tup -> (var (fst tup) (snd tup) == 0)) (nombre,estado)) 5 6-}
 --}
 
 -- Ejercicio 12
@@ -92,6 +63,10 @@ rWhile condicion cuerpo estado = 	head (reverse 									-- 7. Y lo que termino 
 {-
 Ejemplos
 
+	Ejercicio 11:
+		asig "x" (op (+) (var "x") (con 1)) [("x",41)] 							-> [("x",42)]
+		(asig "x" (con 42) >-> asig "y" (var "x")) [("x",10)]					-> [("y",42),("x",42)]
+
 	Ejercicio 12:
 		op (==) (var "foo") (var "bar") [("foo",28),("bar",42),("quux",1)]		->	false
 		op (==) (var "foo") (con 28) [("foo",28),("bar",42),("quux",1)]			-> 	true
@@ -101,5 +76,6 @@ Ejemplos
 
 	Ejercicio 14:
 		rWhile (op (<) (var "hola") (con 15)) [\s -> s ++ [("hola",16)]] [("chau",20)]		-> 	[("chau",20),("hola",16)]
+		rWhile (op (<) (var "i") (con 10)) [asig "res" (op (*) (var "res") (var "pot")), asig "i" (op (+) (var "i") (con 1))] [("pot", 2), ("res", 1)]		-> 	[("i",10),("pot",2),("res",1024)]
 		
 -}
