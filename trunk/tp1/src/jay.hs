@@ -19,20 +19,12 @@ var varName s = maybe 0 id (lookup varName s)
 --}
 asig :: String -> JayExpression Int -> JaySentence
 asig nombre valor estado = 	if (var nombre estado == 0) then
+								-- si la variable no esta, se agrega al estado el nuevo valor
 								[(nombre, valor estado)] ++ estado 
 							else
+								-- si la variable ya tiene un valor asignado en el estado, este se reemplaza por el nuevo valor
 								map ((\key value state elem -> if (key == fst elem) then (key, value state) else elem ) nombre valor estado) estado
 
-
-{--
-varPredicate :: Predicate (String,(Int,JayState))
-varPredicate tup = var (fst tup) (snd.snd tup) == 0
---}
-
-{--
-isIn :: Predicate (String, JaySentence)
-isIn tup = (\tup -> var (fst tup) (snd tup) == 0) 
---}
 
 -- Ejercicio 12
 op :: (a -> b -> c) -> JayExpression a -> JayExpression b -> JayExpression c
