@@ -28,12 +28,15 @@ asig nombre valor estado = 	if (var nombre estado == 0) then
 
 -- Ejercicio 12
 op :: (a -> b -> c) -> JayExpression a -> JayExpression b -> JayExpression c
-op operador op1 op2 estado = operador (op1 estado) (op2 estado)
+op operador op1 op2 estado = operador (op1 estado) (op2 estado)						-- Ejecuto el operador que me pasaron con los valores de los 
+																					-- operandos que obtengo del estado
 
 
 -- Ejercicio 13
 rIf :: JayExpression Bool -> [JaySentence] -> [JaySentence] -> JaySentence
-rIf condicion rama_then rama_else = bifurcacion condicion (sec rama_then) (sec rama_else)
+rIf condicion rama_then rama_else = bifurcacion condicion (sec rama_then) (sec rama_else)	-- Es una bifurcacion, en donde lo que quiero ejecutar 
+																							-- en cada rama es todo el conjunto de instrucciones que 
+																							-- me pasaron
 
 
 -- Ejercicio 14
