@@ -2,19 +2,15 @@ ruta(lujan, baires, 60).
 ruta(baires, laPlata, 70).
 ruta(laPlata, lujan, 140).
 
-ej1(M, Cs) :- withoutRepeated(M), withoutRepeated(CS), routesIncluded(M, Cs), citiesIncluded(Cs, M).
+/* ej1 */
+ciudades([], []).
+ciudades([M|Ms], [X,Y|Cs]) :-   ciudades(Ms, Cs), ruta(X,Y,Z), ruta(X,Y,Z) = M, not(member(X,Cs)), not(member(Y,Cs)).
+ciudades([M|Ms], [X|Cs])    :-   ciudades(Ms, Cs), ruta(X,Y,Z), ruta(X,Y,Z) = M, not(member(X,Cs)), member(Y,Cs).
+ciudades([M|Ms], [Y|Cs])    :-   ciudades(Ms, Cs), ruta(X,Y,Z), ruta(X,Y,Z) = M, member(X,Cs), not(member(Y,Cs)).
+ciudades([M|Ms], Cs)         :-   ciudades(Ms, Cs), ruta(X,Y,Z), ruta(X,Y,Z) = M, member(X,Cs), member(Y,Cs).
 
-
- withoutRepeated([]).
- withoutRepeated([X|XS]) :- not(member(X, XS)), withoutRepeated(XS).
-
- routesIncluded([], _).
- routesIncluded([ruta(X,Y,Z)|MX], CS) :- member(X, CS), member(Y,CS), routesIncluded(MX, CS).
-
- citiesIncluded([], _).
- citiesIncluded([C|CS], [ruta(C,X,Y)|MS]) :- citiesIncluded(CS, [ruta(C,X,Y)|MS]).
- citiesIncluded([C|CS], [ruta(X,C,Y)|MS]) :- citiesIncluded(CS, [ruta(C,X,Y)|MS]).
-
+withoutRepeated([]).
+withoutRepeated([X|XS]) :- not(member(X, XS)), withoutRepeated(XS).
 
 /* ej2 */
 ej2(M, C, [X|Xs]) :- setOf(P, esVecino(M, C, X), L), M =:= L, ej2(M, C, Xs).
@@ -30,13 +26,27 @@ ej3([ruta(_,_,Z)|MS],C1,C2,N)   :- (1 = 0);ej3(MS,C1,C2,N).
 
 /* ej4 */
 /* Agregar without repeated cuando este andando*/
-ej4(M,O,D,[])      :- (O=D).
-ej4(M,O,D,[C|Cs])  :- hayCamino(M,O,C),ej4(M,C,D,Cs).
 
-hayCamino(M,O,D) :- esVecino(M,O,D);(O=D).
+ej4(M,O,D,[C|Cs])  :- (O=C),ej4Aux(M,O,D,Cs),withoutRepeated([C|Cs]).
+
+ej4Aux(M,O,D,[])     :- (D=O).
+ej4Aux(M,O,D,[C|Cs]) :- ej4Aux(M,C,D,Cs),hayCamino(M,O,C).
+
+hayCamino(M,O,D) :- esVecino(M,O,D).
 
 /* ej5 */
-ej5([ruta(O,D,N)|Ms]) = noReflexivo(
+ej5(M) :- ciudades(M,J),todasAlcanzables(J,M,J),noReflexiva(J,M,M).
+
+noReflexiva([],_,M)                    :- (1 = 1).
+noReflexiva([C|Cs],[],M)               :- (1 = 1),noReflexiva(Cs,M,M).
+noReflexiva([C|Cs],[ruta(C,C,_)|Ms],M) :- (1 = 0),noReflexiva([C|Cs],Ms,M).
+noReflexiva([C|Cs],[ruta(A,B,_)|Ms],M) :- not(A = B),(1 = 1),noReflexiva([C|Cs],Ms,M).
+
+todasAlcanzables([],M,Css)     :- (1 = 1).
+todasAlcanzables([C|Cs],M,Css) :- todasAlcanzables(Cs,M,Css),alcanzable(C,Css,M).
+
+alcanzable(C1,[],M) :- (1 = 1).
+alcanzable(C1,[C|CS],M) :- alcanzable(C1,CS,M),ej4(M,C,C1,X).
 
 /*
 isPresent(X, CS) :- member(X, CS).
