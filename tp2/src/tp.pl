@@ -24,15 +24,18 @@ ej3([ruta(C1,C2,Z)|MS],C1,C2,N) :- (Z = N).
 ej3([ruta(C2,C1,Z)|MS],C1,C2,N) :- (Z = N).
 ej3([ruta(_,_,Z)|MS],C1,C2,N)   :- (1 = 0);ej3(MS,C1,C2,N).
 
+
+
 /* ej4 */
-/* Agregar without repeated cuando este andando*/
 
-ej4(M,O,D,[C|Cs])  :- (O=C),ej4Aux(M,O,D,Cs),withoutRepeated([C|Cs]).
-ej4(M,O,D,[])      :- (D=O).
+ej4(M,O,D,[C|Cs]) :- (O=C),ej4Aux(M,O,D,Cs).
 
-ej4Aux(M,O,D,[C|Cs]) :- ej4(M,C,D,Cs),esVecino(M,O,C).
+ej4Aux(M,O,D,[])  :- (O=D).
+ej4Aux([],O,D,Cs) :- (1=0),!.
+ej4Aux([ruta(O,C,_)|Ms],O,D,[C|Cs]) :- ej4Aux(Ms,C,D,Cs).
+ej4Aux([ruta(C,O,_)|Ms],O,D,[C|Cs]) :- ej4Aux(Ms,C,D,Cs).
+ej4Aux([ruta(A,B,_)|Ms],O,D,[C|Cs]) :- ej4Aux(Ms,O,D,[C|Cs]).
 
-hayCamino(M,O,D) :- esVecino(M,O,D).
 
 /* ej5 */
 ej5(M) :- ciudades(M,J),todasAlcanzables(J,M,J),noReflexiva(J,M,M),noSimetria(M,M).
@@ -69,3 +72,9 @@ esPermutacion([], []).
 caminosHamiltonianos([M|Ms], Cs) :-  ruta(X,Y,Z),
                                                         M = ruta(X,Y,Z),
                                                         caminoHamiltoniano( [M|Ms], X, Q, Cs).
+                                                        
+/* ej 10*/
+
+caminosEulerianos([M|Ms],Cs) :- ruta(X,Y,Z),
+                                                        M = ruta(X,Y,Z),
+                                                        caminoEuleriano( [M|Ms], X, Q, Cs).
