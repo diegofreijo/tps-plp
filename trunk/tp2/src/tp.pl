@@ -35,7 +35,13 @@ ej4Aux(M,O,D,[C|Cs]) :- ej4Aux(M,C,D,Cs),hayCamino(M,O,C).
 hayCamino(M,O,D) :- esVecino(M,O,D).
 
 /* ej5 */
-ej5(M) :- ciudades(M,J),todasAlcanzables(J,M,J),noReflexiva(J,M,M).
+ej5(M) :- ciudades(M,J),todasAlcanzables(J,M,J),noReflexiva(J,M,M),noSimetria(M,M).
+/*ej5(M) :- noSimetria(M,M).*/
+
+noSimetria([],_) :- (1 = 1).
+noSimetria([ruta(C1,C2,_)|Ms],M) :- noRuta(C2,C1,M),noSimetria(Ms,M).
+
+noRuta(C1,C2,[ruta(A,B,_)|Ms])   :- not(A = C1);not(B = C2),noRuta(C1,C2,Ms).
 
 noReflexiva([],_,M)                    :- (1 = 1).
 noReflexiva([C|Cs],[],M)               :- (1 = 1),noReflexiva(Cs,M,M).
