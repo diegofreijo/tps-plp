@@ -28,9 +28,9 @@ ej3([ruta(_,_,Z)|MS],C1,C2,N)   :- (1 = 0);ej3(MS,C1,C2,N).
 /* Agregar without repeated cuando este andando*/
 
 ej4(M,O,D,[C|Cs])  :- (O=C),ej4Aux(M,O,D,Cs),withoutRepeated([C|Cs]).
+ej4(M,O,D,[])      :- (D=O).
 
-ej4Aux(M,O,D,[])     :- (D=O).
-ej4Aux(M,O,D,[C|Cs]) :- ej4Aux(M,C,D,Cs),hayCamino(M,O,C).
+ej4Aux(M,O,D,[C|Cs]) :- ej4(M,C,D,Cs),esVecino(M,O,C).
 
 hayCamino(M,O,D) :- esVecino(M,O,D).
 
@@ -54,20 +54,18 @@ todasAlcanzables([C|Cs],M,Css) :- todasAlcanzables(Cs,M,Css),alcanzable(C,Css,M)
 alcanzable(C1,[],M) :- (1 = 1).
 alcanzable(C1,[C|CS],M) :- alcanzable(C1,CS,M),ej4(M,C,C1,X).
 
-/*
-isPresent(X, CS) :- member(X, CS).
-*/
+
+/* ej 6 */
+caminoHamiltoniano(M, O, D, Cs) :-  ciudades(M, Xs),ej4(M, O, D, Cs),           /* Cs tiene que ser un camino desde O hasta D */
+                                                      esPermutacion(Xs, Cs).
+
+esPermutacion([C | Cs], Ds) :-  select(C, Ds, Dss),
+                                              esPermutacion(Cs, Dss).
+esPermutacion([], []).
 
 
 
-
-/*                              ejemplo boludo
-append([], L, L).
-append([X|XS], L, [X|R]) :- append(XS, L, R).
-
-equals([], []).
-equals([X|XS], [Y|YS]) :- X = Y, equals(XS, YS).
-
-sameSize([], []).
-sameSize([M|MS], [C|CS]) :- sameSize(MS, CS).
-*/
+/* ej 7 */
+caminosHamiltonianos([M|Ms], Cs) :-  ruta(X,Y,Z),
+                                                        M = ruta(X,Y,Z),
+                                                        caminoHamiltoniano( [M|Ms], X, Q, Cs).
