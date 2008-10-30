@@ -2,6 +2,12 @@ ruta(lujan, baires, 60).
 ruta(baires, laPlata, 70).
 ruta(laPlata, lujan, 140).
 
+ruta(zarate, bsas, 30).
+ruta(bahia, bsas,10).
+ruta(bahia, zarate, 20)
+
+/* [ruta(zarate, bsas, 30), ruta(bahia, bsas,10), ruta(bahia, zarate, 20)]  */
+
 /* ej1 */
 ciudades([], []).
 ciudades([M|Ms], [X,Y|Cs]) :-   ciudades(Ms, Cs), ruta(X,Y,Z), ruta(X,Y,Z) = M, not(member(X,Cs)), not(member(Y,Cs)).
@@ -60,21 +66,33 @@ alcanzable(C1,[C|CS],M) :- alcanzable(C1,CS,M),ej4(M,C,C1,X).
 
 /* ej 6 */
 caminoHamiltoniano(M, O, D, Cs) :-  ciudades(M, Xs),ej4(M, O, D, Cs),           /* Cs tiene que ser un camino desde O hasta D */
-                                                      esPermutacion(Xs, Cs).
+                                    esPermutacion(Xs, Cs).
 
 esPermutacion([C | Cs], Ds) :-  select(C, Ds, Dss),
-                                              esPermutacion(Cs, Dss).
-esPermutacion([], []).
+                                esPermutacion(Cs, Dss).
+								esPermutacion([], []).
 
 
 
 /* ej 7 */
-caminosHamiltonianos([M|Ms], Cs) :-  ruta(X,Y,Z),
-                                                        M = ruta(X,Y,Z),
-                                                        caminoHamiltoniano( [M|Ms], X, Q, Cs).
-                                                        
+caminosHamiltonianos([M|Ms], Cs) :- ruta(X,Y,Z), 
+									M = ruta(X,Y,Z),
+                                    caminoHamiltoniano( [M|Ms], X, Q, Cs).
+
+/* ej 8 : ( Existe un camino (C1) O-hasta-D tq no Existe otro camino (C2) O-hasta-D tq length(C2) < length(C1) ) */
+caminoMinimo(M, O, D, Cs, L) :- ej4(M, O, D, Cs),
+                                distanciaCamino(M, Cs, L),
+                                not( (ej4(M, O, D, Xs), distanciaCamino(M, Xs, R), R < L ) ). 
+
+
+distanciaCamino(M, [], 0).				/* no es un caso valido, pero asumimos como resultado posible 0 */
+distanciaCamino(M, [C|[]], 0). 
+distanciaCamino(M, [O,C|Cs], X) :- 	( member(ruta(O,C,Z), M) ; member(ruta(C,O,Z), M) ),
+                                  	distanciaCamino(M, [C|Cs], W), X is W+Z.
+
+
 /* ej 10*/
 
 caminosEulerianos([M|Ms],Cs) :- ruta(X,Y,Z),
-                                                        M = ruta(X,Y,Z),
-                                                        caminoEuleriano( [M|Ms], X, Q, Cs).
+                                M = ruta(X,Y,Z),
+                                caminoEuleriano( [M|Ms], X, Q, Cs).
