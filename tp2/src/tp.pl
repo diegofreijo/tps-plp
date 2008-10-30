@@ -244,16 +244,6 @@ camino(M, O, D, [O|Cs]) :-  ( E = ruta(O,X,_), member(E, M) ; ( E = ruta(X,O,_),
                             camino(Ms, X, D, Cs).
 
 
-% Este predicado es un "filtro" para los posibles predicados que devolveria camino. Este filtro consiste que los caminos no tienen
-% que tener elementos repetidos, con lo cual, los caminos que cumplan este predicado seran caminos simples.
-% NOTA:   este predicado es equivalente al predicado que se pidio en el ejercicio 4, pero el ejercicio "oficial" no es este sino el otro.
-%         Esto se debe a que el otro predicado fue mas testeado que este, el cual surgio como una necesidada de ultimo momento para ciertos
-%         casos que no cubre el ejercicio 4 oficial
-
-caminoSimple2(M,O,D,Cs) :- camino(M,O,D,Cs), withoutRepeated(Cs).
-
-
-
 
 % ej 10
 % caminosEulerianos(+M, -Cs)
