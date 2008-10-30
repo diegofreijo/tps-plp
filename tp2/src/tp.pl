@@ -28,13 +28,13 @@ ej3([ruta(_,_,Z)|MS],C1,C2,N)   :- (1 = 0);ej3(MS,C1,C2,N).
 
 /* ej4 */
 
-ej4(M,O,D,[C|Cs]) :- (O=C),ej4Aux(M,O,D,Cs).
+ej4(M,O,D,[C|Cs]) :- (O=C),ej4Aux(M,O,D,Cs,M),withoutRepeated([C|Cs]).
 
-ej4Aux(M,O,D,[])  :- (O=D).
-ej4Aux([],O,D,Cs) :- (1=0),!.
-ej4Aux([ruta(O,C,_)|Ms],O,D,[C|Cs]) :- ej4Aux(Ms,C,D,Cs).
-ej4Aux([ruta(C,O,_)|Ms],O,D,[C|Cs]) :- ej4Aux(Ms,C,D,Cs).
-ej4Aux([ruta(A,B,_)|Ms],O,D,[C|Cs]) :- ej4Aux(Ms,O,D,[C|Cs]).
+ej4Aux(_,D,D,[],_)  :- (O=D),!.
+ej4Aux([],O,D,Cs,M) :- (1=0),!.
+ej4Aux([ruta(O,C,_)|Ms],O,D,[C|Cs],M) :- select(ruta(O,C,_),M,MR),ej4Aux(MR,C,D,Cs,M).
+ej4Aux([ruta(C,O,_)|Ms],O,D,[C|Cs],M) :- select(ruta(C,O,_),M,MR),ej4Aux(MR,C,D,Cs,M).
+ej4Aux([ruta(A,B,_)|Ms],O,D,[C|Cs],M) :- ej4Aux(Ms,O,D,[C|Cs],M).
 
 
 /* ej5 */
