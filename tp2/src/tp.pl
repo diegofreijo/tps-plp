@@ -5,10 +5,7 @@ mapaEjemplo([
   ruta(bahia, bsas, 10),
   ruta(bahia, zarate, 20)]).
 
-mapa1([
-  ruta(a, b, 20),
-  ruta(b, c, 10),
-  ruta(c, a, 20)]).
+mapa1([ruta(a, b, 20), ruta(b, c, 10), ruta(c, a, 20)]).
 
 mapa2([
   ruta(a, b, 10),
@@ -40,18 +37,16 @@ mapa2([
 % cada una es una ciudad del mapa, y estan todas las de este contenidas en dicha lista.
 
 ciudades([], []).
-ciudades([M|Ms], [X,Y|Cs]) :-   ciudades(Ms, Cs), ruta(X,Y,Z) = M, not(member(X,Cs)), not(member(Y,Cs)).
-ciudades([M|Ms], [X|Cs])    :-   ciudades(Ms, Cs), ruta(X,Y,Z) = M, not(member(X,Cs)), member(Y,Cs).
-ciudades([M|Ms], [Y|Cs])    :-   ciudades(Ms, Cs), ruta(X,Y,Z) = M, member(X,Cs), not(member(Y,Cs)).
-ciudades([M|Ms], Cs)         :-   ciudades(Ms, Cs), ruta(X,Y,Z) = M, member(X,Cs), member(Y,Cs).
-
-withoutRepeated([]).
-withoutRepeated([X|XS]) :- not(member(X, XS)), withoutRepeated(XS).
+ciudades([ruta(X,Y,_)|Ms], [X,Y|Cs]) :-   ciudades(Ms, Cs), not(member(X,Cs)), not(member(Y,Cs)).
+ciudades([ruta(X,Y,_)|Ms], [X|Cs])   :-   ciudades(Ms, Cs), not(member(X,Cs)), member(Y,Cs).
+ciudades([ruta(X,Y,_)|Ms], [Y|Cs])   :-   ciudades(Ms, Cs), member(X,Cs), not(member(Y,Cs)).
+ciudades([ruta(X,Y,_)|Ms], Cs)       :-   ciudades(Ms, Cs), member(X,Cs), member(Y,Cs).
 
 
 
 % ej 2
 % ciudadesVecinas(+M, +C, -Cs)
+% esVecino(+M, +X, +Y)
 %
 % Verificar que Vecinos es la lista de vecinos de Ciudad equivale a ver si cada ciudad
 % que es vecina esta en la lista. Para verificar si una ciudad es vecina de otra solo
@@ -60,8 +55,8 @@ withoutRepeated([X|XS]) :- not(member(X, XS)), withoutRepeated(XS).
 
 ciudadesVecinas(Mapa, Ciudad, Vecinos) :- setof(Vecino, esVecino(Mapa, Ciudad, Vecino), Vecinos).
 
-esVecino(M,X,Y) :- member(ruta(Y,X,Z), M).
-esVecino(M,X,Y) :- member(ruta(X,Y,Z), M).
+esVecino(M, X, Y) :- member(ruta(X, Y, _), M).
+esVecino(M, X, Y) :- member(ruta(Y, X, _), M).
 
 
 
@@ -71,29 +66,30 @@ esVecino(M,X,Y) :- member(ruta(X,Y,Z), M).
 % Busca recursivamente la ruta deseada y verifica si la longitud es igual al numero
 % dado, si no la encuentra, sigue iterando hasta encontrarla.
 
-distanciaVecinas([ruta(C1,C2,Z)|MS],C1,C2,N) :- (Z = N).
-distanciaVecinas([ruta(C2,C1,Z)|MS],C1,C2,N) :- (Z = N).
-distanciaVecinas([ruta(_,_,Z)|MS],C1,C2,N)   :- (1 = 0); distanciaVecinas(MS,C1,C2,N).
+distanciaVecinas([ruta(C1, C2, Z) | MS], C1, C2, Z).
+distanciaVecinas([ruta(C2, C1, Z) | MS], C1, C2, Z).
+distanciaVecinas([ruta(_, _, Z) | MS], C1, C2, N)      :- distanciaVecinas(MS, C1, C2, N).
 
 
 
 % ej 4
 % caminoSimple(+M, +D, +H, -Cs)
 %
-% Decide si un camino es camino simple entre dos ciudades. Para hacer esto primero verifica q la ciudad origen sea igual a la la primera de la lista.
-% Luego, si encuentra la ruta entre el origen y la proxima ciudad de la lista, saca a esa ruta del mapa y sigue probando. Sacar la ruta es para no permitir
-% la vuelta atras del camino. Se pone la primera ciudad de la lista como origen en la nueva iteracion y se saca de la lista del camino.
-% Al caso base se llega de dos maneras: O bien no pudo encontrar ruta, lo que hace que no es camino, o no hay mas ciudades para verificar, lo que valida
-% que la ultima de la lista sea igual a el destino del camino.
+% Este predicado recursivo determina si existe un camino en el mapa M que vaya desde
+%  O hasta D. Para esto nos valemos de la
+% transitividad de caminos y en cada paso recursivo unicamente checkeamos que
+% exista un camino desde O hasta X. Luego llamamos
+% recursivamente pero en ves de pasar O se pasa como parametro X. O sea :
+%     O RelacionadoCon X y X RelacionadoCon Y y ... y Z RelacionadoConD => O
+%     RelacionadoCon D => hay camino desde O hasta D
 
-caminoSimple(M,O,D,[C|Cs]) :- (O=C),ej4Aux(M,O,D,Cs,M),withoutRepeated([C|Cs]).
-
-ej4Aux(_,D,D,[],_)  :- (O=D),!.
-ej4Aux([],O,D,Cs,M) :- (1=0),!.
-ej4Aux([ruta(O,C,_)|Ms],O,D,[C|Cs],M) :- select(ruta(O,C,_),M,MR),ej4Aux(MR,C,D,Cs,M).
-ej4Aux([ruta(C,O,_)|Ms],O,D,[C|Cs],M) :- select(ruta(C,O,_),M,MR),ej4Aux(MR,C,D,Cs,M).
-ej4Aux([ruta(A,B,_)|Ms],O,D,[C|Cs],M) :- ej4Aux(Ms,O,D,[C|Cs],M).
-
+caminoSimple(M, D, D, [D]).
+caminoSimple(M, O, D, [O|Cs]) :-  E = ruta(O,X,_), member(E, M),
+                            select(E,M,Ms),
+                            caminoSimple(Ms, X, D, Cs).
+caminoSimple(M, O, D, [O|Cs]) :-  E = ruta(X,O,_), member(E, M),
+                            select(E,M,Ms),
+                            caminoSimple(Ms, X, D, Cs).
 
 
 % ej 5
@@ -101,26 +97,26 @@ ej4Aux([ruta(A,B,_)|Ms],O,D,[C|Cs],M) :- ej4Aux(Ms,O,D,[C|Cs],M).
 %
 % En el ej5, se realizan las siguientes validaciones:
 % noSimetria: verifica que no haya ruta de A a B y de B a A.
-% noReflexiva: verifica q no existe la ruta de A a A.
+% noReflexiva: verifica que no existe la ruta de A a A.
 % todasAlcanzables: Verifica si hay camino desde todas las ciudades a todas.
+% Todos estos predicados requieren los parametros instanciados
 
-mapa(M) :- ciudades(M,J),todasAlcanzables(J,M,J),noReflexiva(J,M,M),noSimetria(M,M).
+mapa(M) :- ciudades(M,J), todasAlcanzables(J,M,J), noReflexiva(J,M,M), noSimetria(M,M).
 
-noSimetria([],_) :- (1 = 1).
-noSimetria([ruta(C1,C2,_)|Ms],M) :- noRuta(C2,C1,M),noSimetria(Ms,M).
+noSimetria([],_).
+noSimetria([ruta(C1,C2,_)|Ms], M) :- noRuta(C2,C1,M), noSimetria(Ms,M).
 
-noRuta(C1,C2,[ruta(A,B,_)|Ms])   :- not(A = C1);not(B = C2),noRuta(C1,C2,Ms).
+noRuta(_, _, []).
+noRuta(C1, C2, [ruta(A,B,_)|Ms])   :- not( (A = C1 , B = C2) ) , noRuta(C1,C2,Ms).
 
-noReflexiva([],_,M)                    :- (1 = 1).
-noReflexiva([C|Cs],[],M)               :- (1 = 1),noReflexiva(Cs,M,M).
-noReflexiva([C|Cs],[ruta(C,C,_)|Ms],M) :- (1 = 0),noReflexiva([C|Cs],Ms,M).
-noReflexiva([C|Cs],[ruta(A,B,_)|Ms],M) :- not(A = B),(1 = 1),noReflexiva([C|Cs],Ms,M).
+noReflexiva([],_,M).
+noReflexiva([C|Cs],[],M)               :- noReflexiva(Cs,M,M).
+noReflexiva([C|Cs],[ruta(A,B,_)|Ms],M) :- not(A = B), noReflexiva([C|Cs],Ms,M).
 
-todasAlcanzables([],M,Css)     :- (1 = 1).
-todasAlcanzables([C|Cs],M,Css) :- todasAlcanzables(Cs,M,Css),alcanzable(C,Css,M).
+todasAlcanzables([],M,Css).
+todasAlcanzables([C|Cs],M,Css) :- alcanzable(C,M), todasAlcanzables(Cs,M,Css).
 
-alcanzable(C1,[],M) :- (1 = 1).
-alcanzable(C1,[C|CS],M) :- alcanzable(C1,CS,M), caminoSimple(M,C,C1,X).
+alcanzable(Ciudad,M) :- setof(C, Camino^caminoSimple(M, C, Ciudad, Camino), _).
 
 
 
@@ -135,13 +131,11 @@ alcanzable(C1,[C|CS],M) :- alcanzable(C1,CS,M), caminoSimple(M,C,C1,X).
 % encontrar un camino hamiltoniano es equivalente a encotrar un camino que cumpla con el
 % predicado del ejercicio 4 y la condicion antes mencionada.
 
-caminoHamiltoniano(M, O, D, Cs) :-  ciudades(M, Xs), caminoSimple(M, O, D, Cs),           /* Cs tiene que ser un camino desde O hasta D */
-                                                      esPermutacion(Xs, Cs).
-
-esPermutacion([C | Cs], Ds) :-  select(C, Ds, Dss),
-                                              esPermutacion(Cs, Dss).
-                                              esPermutacion([], []).
-
+caminoHamiltoniano(M, O, D, Cs) :-  ciudades(M, Xs),
+                                    caminoSimple(M, O, D, Cs),
+                                    permutation(Xs, Cs).
+                                    
+                                    
 
 % ej 7
 % caminosHamiltonianos(+M, -Cs)
@@ -173,13 +167,16 @@ caminosHamiltonianos(M, Cs) :-  ciudades(M, Ds),
 % sumando las distancias que figuran en el mapa.
 
 caminoMinimo(M, O, D, Cs, L) :- caminoSimple(M, O, D, Cs),
-                                                distanciaCamino(M, Cs, L),
-                                                not( (caminoSimple(M, O, D, Xs), distanciaCamino(M, Xs, R), R < L ) ).
+                                distanciaCamino(M, Cs, L),
+                                not( (caminoSimple(M, O, D, Xs),
+                                distanciaCamino(M, Xs, R), R < L ) ).
 
-distanciaCamino(M, [], 0).                /* no es un caso valido, pero asumimos como resultado posible 0 */
+distanciaCamino(M, [], 0).  /* no es un caso valido, pero asumimos como resultado posible 0 */
 distanciaCamino(M, [C|[]], 0).
-distanciaCamino(M, [O,C|Cs], X) :-  ( member(ruta(O,C,Z), M) ; member(ruta(C,O,Z), M) ),
-                                                    distanciaCamino(M, [C|Cs], W), X is W+Z.
+distanciaCamino(M, [O,C|Cs], X) :-  member(ruta(O,C,Z), M),
+                                    distanciaCamino(M, [C|Cs], W), X is W+Z.
+distanciaCamino(M, [O,C|Cs], X) :-  member(ruta(C,O,Z), M),
+                                    distanciaCamino(M, [C|Cs], W), X is W+Z.
 
 
 
@@ -224,24 +221,16 @@ distanciaCamino(M, [O,C|Cs], X) :-  ( member(ruta(O,C,Z), M) ; member(ruta(C,O,Z
 % Este predicado se vale del uso del predicado camino ya que es condicion
 % necesaria para nuestro proposito, que exista un camino desde O hasta D.
 
-caminoEuleriano(M,O,D,Cs) :-    camino(M,O,D,Cs),
+caminoEuleriano(M,O,D,Cs) :-    caminoSimple(M,O,D,Cs),
                                 length(Cs,K),
                                 length(M,L),
-                                L=<K,
-                                not( (E = ruta(X,Y,_), member(E,M), (not(member(X,Cs) ; member(Y,Cs)))) ).
-                                
-% Este predicado recursivo determina si existe un camino en el mapa M que vaya desde
-%  O hasta D. Para esto nos valemos de la
-% transitividad de caminos y en cada paso recursivo unicamente checkeamos que
-% exista un camino desde O hasta X. Luego llamamos
-% recursivamente pero en ves de pasar O se pasa como parametro X. O sea :
-%     O RelacionadoCon X y X RelacionadoCon Y y ... y Z RelacionadoConD => O
-%     RelacionadoCon D => hay camino desde O hasta D
-
-camino(M, D, D, [D]).
-camino(M, O, D, [O|Cs]) :-  ( E = ruta(O,X,_), member(E, M) ; ( E = ruta(X,O,_), member(E,M) ) ),
-                            select(E,M,Ms),
-                            camino(Ms, X, D, Cs).
+                                L =< K,
+                                not( (E = ruta(X,Y,_), member(E,M), not(member(X,Cs))) ).
+caminoEuleriano(M,O,D,Cs) :-    caminoSimple(M,O,D,Cs),
+                                length(Cs,K),
+                                length(M,L),
+                                L =< K,
+                                not( (E = ruta(X,Y,_), member(E,M), member(Y,Cs)) ).
 
 
 
